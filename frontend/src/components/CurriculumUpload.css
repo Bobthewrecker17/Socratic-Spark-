@@ -1,0 +1,218 @@
+.cu-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 32px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cu-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cu-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cu-input {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.cu-input:focus {
+  border-color: var(--color-primary);
+}
+
+.cu-dropzone {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-bg);
+}
+
+.cu-dropzone:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.cu-dropzone.has-file {
+  border-color: var(--color-accent);
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.cu-upload-icon {
+  font-size: 1.8rem;
+  opacity: 0.5;
+}
+
+.cu-file-icon {
+  font-size: 2rem;
+}
+
+.cu-file-name {
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.cu-file-size {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.cu-tutor-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.cu-tutor-mode-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.cu-tutor-mode-card:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.cu-tutor-mode-card.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.cu-tutor-mode-card.active.discovery-active {
+  border-color: #10b981;
+  background: #ecfdf5;
+}
+
+.cu-tutor-mode-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cu-tutor-mode-icon {
+  font-size: 1.1rem;
+}
+
+.cu-tutor-mode-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.cu-tutor-mode-check {
+  margin-left: auto;
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.cu-tutor-mode-desc {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.cu-mode-toggle {
+  display: flex;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.cu-mode-btn {
+  flex: 1;
+  padding: 9px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  transition: all 0.15s;
+}
+
+.cu-mode-btn:hover:not(.active) {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.cu-mode-btn.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.cu-url-input {
+  font-size: 0.88rem;
+}
+
+.cu-url-hint {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.cu-error {
+  color: var(--color-danger);
+  font-size: 0.87rem;
+  background: var(--color-danger-light);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+}
+
+.cu-submit {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 13px;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: background 0.15s;
+  letter-spacing: 0.01em;
+}
+
+.cu-submit:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.cu-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

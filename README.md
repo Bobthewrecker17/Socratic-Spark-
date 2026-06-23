@@ -102,3 +102,4 @@ The frontend will be available at http://localhost:5173.
 | GET | `/audit/sessions` | List all sessions (requires `Authorization: Bearer <password>`) |
 | GET | `/audit/{session_id}` | Full audit log for a session (requires auth) |
 | GET | `/health` | Health check |
+# Socratic-Spark-

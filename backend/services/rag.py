@@ -1,29 +1,13 @@
 import os
 import re
-import chromadb
-from chromadb.config import Settings
+import math
+from collections import defaultdict
 
-_chroma_client = None
-_collection = None
-
-CHROMA_DB_PATH = os.getenv("CHROMA_DB_PATH", "./chroma_db")
-COLLECTION_NAME = "curriculum"
 CHUNK_SIZE = 300  # approximate words per chunk
 CHUNK_OVERLAP = 50  # words of overlap
 
-
-def get_collection():
-    global _chroma_client, _collection
-    if _collection is None:
-        _chroma_client = chromadb.PersistentClient(
-            path=CHROMA_DB_PATH,
-            settings=Settings(anonymized_telemetry=False),
-        )
-        _collection = _chroma_client.get_or_create_collection(
-            name=COLLECTION_NAME,
-            metadata={"hnsw:space": "cosine"},
-        )
-    return _collection
+# In-memory store: session_id -> list of chunk strings
+_store: dict[str, list[str]] = {}
 
 
 def _chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVERLAP) -> list[str]:
@@ -32,8 +16,7 @@ def _chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OV
     start = 0
     while start < len(words):
         end = min(start + chunk_size, len(words))
-        chunk = " ".join(words[start:end])
-        chunks.append(chunk)
+        chunks.append(" ".join(words[start:end]))
         if end == len(words):
             break
         start += chunk_size - overlap
@@ -53,52 +36,67 @@ def _extract_text_from_pdf(file_bytes: bytes) -> str:
     return "\n".join(pages)
 
 
+def _tokenize(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9]+", text.lower())
+
+
+def _bm25_scores(query: str, chunks: list[str], k1: float = 1.5, b: float = 0.75) -> list[float]:
+    """Lightweight BM25 scoring with no external dependencies."""
+    tokenized_chunks = [_tokenize(c) for c in chunks]
+    query_terms = _tokenize(query)
+    avg_dl = sum(len(c) for c in tokenized_chunks) / max(len(tokenized_chunks), 1)
+
+    # Document frequency per term
+    df: dict[str, int] = defaultdict(int)
+    for tc in tokenized_chunks:
+        for term in set(tc):
+            df[term] += 1
+
+    N = len(tokenized_chunks)
+    scores = []
+    for tc in tokenized_chunks:
+        dl = len(tc)
+        tf_map: dict[str, int] = defaultdict(int)
+        for term in tc:
+            tf_map[term] += 1
+
+        score = 0.0
+        for term in query_terms:
+            if term not in df:
+                continue
+            idf = math.log((N - df[term] + 0.5) / (df[term] + 0.5) + 1)
+            tf = tf_map[term]
+            numerator = tf * (k1 + 1)
+            denominator = tf + k1 * (1 - b + b * dl / avg_dl)
+            score += idf * numerator / denominator
+        scores.append(score)
+    return scores
+
+
 async def ingest_curriculum(
     content: bytes,
     filename: str,
     subject: str,
     session_id: str,
 ) -> int:
-    """Ingest curriculum text or PDF, chunk it, and store in ChromaDB. Returns chunk count."""
+    """Ingest curriculum text or PDF, chunk it, and store in memory. Returns chunk count."""
     if filename.lower().endswith(".pdf"):
         text = _extract_text_from_pdf(content)
     else:
         text = content.decode("utf-8", errors="replace")
 
-    # Normalize whitespace
     text = re.sub(r"\s+", " ", text).strip()
-
     chunks = _chunk_text(text)
-    collection = get_collection()
-
-    ids = [f"{session_id}_{i}" for i in range(len(chunks))]
-    metadatas = [
-        {"subject": subject, "chunk_index": i, "session_id": session_id}
-        for i in range(len(chunks))
-    ]
-
-    # Delete any existing chunks for this session so re-upload replaces them
-    try:
-        existing = collection.get(where={"session_id": session_id})
-        if existing["ids"]:
-            collection.delete(ids=existing["ids"])
-    except Exception:
-        pass
-
-    collection.add(documents=chunks, ids=ids, metadatas=metadatas)
+    _store[session_id] = chunks
     return len(chunks)
 
 
 async def retrieve_context(query: str, session_id: str, n_results: int = 5) -> list[str]:
     """Retrieve top-n relevant chunks for the given query within the session's curriculum."""
-    collection = get_collection()
-    try:
-        results = collection.query(
-            query_texts=[query],
-            n_results=n_results,
-            where={"session_id": session_id},
-        )
-        docs = results.get("documents", [[]])[0]
-        return docs
-    except Exception:
+    chunks = _store.get(session_id, [])
+    if not chunks:
         return []
+
+    scores = _bm25_scores(query, chunks)
+    ranked = sorted(zip(scores, chunks), key=lambda x: x[0], reverse=True)
+    return [chunk for _, chunk in ranked[:n_results]]

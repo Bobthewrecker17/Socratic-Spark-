@@ -9,7 +9,7 @@ import {
 } from '../components/SessionCatalog.jsx'
 import './StudentView.css'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API = import.meta.env.VITE_API_URL || 'https://socratic-spark-snaw.onrender.com'
 
 const MODE_META = {
   discovery: { icon: '🔭', label: 'Discovery',  next: 'strict',    nextLabel: '📋 Switch to Strict' },

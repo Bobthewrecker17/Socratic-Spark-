@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import AuditLog from '../components/AuditLog.jsx'
 import './TeacherView.css'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API = import.meta.env.VITE_API_URL || 'https://socratic-spark-snaw.onrender.com'
 
 const MODE_INFO = {
   discovery: {
